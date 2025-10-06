@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Abone Düzenle - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Abone Düzenle</h2>
+        <p class="mb-0">{{ subscriber.email }} abonesini düzenleyin</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-md-8">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.mail_list.id_for_label }}" class="form-label">Mail Listesi</label>
+                            {{ form.mail_list }}
+                            {% if form.mail_list.errors %}
+                            <div class="text-danger small">{{ form.mail_list.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">E-posta</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="text-danger small">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Ad Soyad</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="text-danger small">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">Telefon</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                            <div class="text-danger small">{{ form.phone.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.company.id_for_label }}" class="form-label">Şirket</label>
+                            {{ form.company }}
+                            {% if form.company.errors %}
+                            <div class="text-danger small">{{ form.company.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'mail_list_detail' subscriber.mail_list.id %}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-md-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Abone Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Kayıt Tarihi</small>
+                    <p class="mb-0">{{ subscriber.subscribed_at|date:"d M Y" }}</p>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Durum</small>
+                    <p class="mb-0">
+                        <span class="badge bg-{% if subscriber.is_active %}success{% else %}danger{% endif %}">
+                            {{ subscriber.is_active|yesno:"Aktif,Pasif" }}
+                        </span>
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Doğrulama</small>
+                    <p class="mb-0">
+                        <span class="badge bg-{% if subscriber.is_verified %}success{% else %}warning{% endif %}">
+                            {{ subscriber.is_verified|yesno:"Doğrulanmış,Doğrulanmamış" }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Hızlı Eylemler</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if subscriber.is_active %}
+                    <a href="{% url 'manual_unsubscribe' subscriber.id %}" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-ban me-2"></i>Aboneliği Sonlandır
+                    </a>
+                    {% else %}
+                    <button class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-check me-2"></i>Aboneliği Aktif Et
+                    </button>
+                    {% endif %}
+                    <a href="{% url 'delete_subscriber' subscriber.id %}" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-trash me-2"></i>Aboneyi Sil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

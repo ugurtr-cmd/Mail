@@ -1,0 +1,322 @@
+<!-- dashboard/dashboard.html - Hatalı kısımları düzelt -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<!-- Özet Kartları -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-primary text-white mb-4 stats-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Toplam Abone</div>
+                        <div class="h5 mb-0">{{ total_subscribers }}</div>
+                        <div class="small text-white-50">
+                            {% with active_subscribers=total_subscribers %}
+                                {% if active_subscribers > 0 %}
+                                    {{ active_subscribers }} aktif abone
+                                {% else %}
+                                    Yeni başladınız
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-success text-white mb-4 stats-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Aktif Liste</div>
+                        <div class="h5 mb-0">{{ mail_lists.count }}</div>
+                        <div class="small text-white-50">
+                            {% with active_lists=mail_lists.count %}
+                                {{ active_lists }} liste
+                            {% endwith %}
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-list fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-warning text-white mb-4 stats-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Toplam Kampanya</div>
+                        <div class="h5 mb-0">{{ total_campaigns }}</div>
+                        <div class="small text-white-50">
+                            {{ campaigns|length }} son kampanya
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-envelope fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-info text-white mb-4 stats-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="text-xs font-weight-bold text-uppercase mb-1">
+                            Açılma Oranı</div>
+                        <div class="h5 mb-0">{{ success_rate }}%</div>
+                        <div class="small text-white-50">
+                            Son 30 gün: {{ total_opens_recent }} açılma
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performans Grafiği -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">30 Günlük Performans</h5>
+            </div>
+            <div class="card-body">
+                {% if performance_data.dates != '[]' %}
+                <canvas id="performanceChart" height="100"></canvas>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Henüz yeterli veri yok. İlk kampanyanızı oluşturun.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gerçek Zamanlı İstatistikler -->
+<div class="row mb-4">
+    <div class="col-12 col-md-6">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">📈 Anlık İstatistikler</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="h4 text-primary mb-1" id="realTimeSent">0</div>
+                        <small class="text-muted">Bugün Gönderilen</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="h4 text-success mb-1" id="realTimeOpens">0</div>
+                        <small class="text-muted">Bugün Açılan</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="h4 text-info mb-1" id="realTimeClicks">0</div>
+                        <small class="text-muted">Bugün Tıklanan</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">🚀 Sistem Durumu</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="h4 text-warning mb-1">{{ active_automations_count }}</div>
+                        <small class="text-muted">Aktif Otomasyon</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="h4 text-secondary mb-1">{{ upcoming_campaigns|length }}</div>
+                        <small class="text-muted">Yaklaşan Kampanya</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="h4 text-success mb-1" id="deliveryRate">98%</div>
+                        <small class="text-muted">Teslim Oranı</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Son Kampanyalar -->
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Son Kampanyalar</h5>
+                <a href="{% url 'campaigns' %}" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+            </div>
+            <div class="card-body">
+                {% if campaigns %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Kampanya</th>
+                                <th>Durum</th>
+                                <th>Gönderim</th>
+                                <th>Açılma</th>
+                                <th>Tıklanma</th>
+                                <th>Tarih</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for campaign in campaigns %}
+                            <tr>
+                                <td>
+                                    <strong>{{ campaign.name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ campaign.subject }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if campaign.status == 'sent' %}success{% elif campaign.status == 'sending' %}warning{% elif campaign.status == 'failed' %}danger{% else %}secondary{% endif %}">
+                                        {{ campaign.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ campaign.total_sent }}</td>
+                                <td>
+                                    {{ campaign.opens }} 
+                                    <small class="text-muted">
+                                        ({{ campaign.get_open_rate|floatformat:1 }}%)
+                                    </small>
+                                </td>
+                                <td>
+                                    {{ campaign.clicks }}
+                                    <small class="text-muted">
+                                        ({{ campaign.get_click_rate|floatformat:1 }}%)
+                                    </small>
+                                </td>
+                                <td>{{ campaign.created_at|date:"d.m.Y" }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'campaign_stats' campaign.id %}" class="btn btn-sm btn-outline-info">
+                                            <i class="fas fa-chart-bar"></i>
+                                        </a>
+                                        {% if campaign.status == 'draft' %}
+                                        <a href="{% url 'send_campaign' campaign.id %}" class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-envelope fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Henüz kampanyanız yok</h5>
+                    <p class="text-muted">İlk kampanyanızı oluşturarak başlayın</p>
+                    <a href="{% url 'create_campaign' %}" class="btn btn-primary">
+                        İlk Kampanyanızı Oluşturun
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Performans Grafiği
+{% if performance_data.dates != '[]' %}
+const performanceCtx = document.getElementById('performanceChart').getContext('2d');
+const performanceChart = new Chart(performanceCtx, {
+    type: 'line',
+    data: {
+        labels: {{ performance_data.dates|safe }},
+        datasets: [
+            {
+                label: 'Gönderilen',
+                data: {{ performance_data.sent_data|safe }},
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Açılan',
+                data: {{ performance_data.open_data|safe }},
+                borderColor: '#1cc88a',
+                backgroundColor: 'rgba(28, 200, 138, 0.1)',
+                tension: 0.4,
+                fill: true
+            },
+            {
+                label: 'Tıklanan',
+                data: {{ performance_data.click_data|safe }},
+                borderColor: '#36b9cc',
+                backgroundColor: 'rgba(54, 185, 204, 0.1)',
+                tension: 0.4,
+                fill: true
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+{% endif %}
+
+// Gerçek Zamanlı Veri Güncelleme
+function updateRealTimeStats() {
+    fetch('/dashboard/api/real-time-stats/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('realTimeSent').textContent = data.today_sent;
+            document.getElementById('realTimeOpens').textContent = data.today_opens;
+            document.getElementById('realTimeClicks').textContent = data.today_clicks;
+            document.getElementById('deliveryRate').textContent = data.delivery_rate + '%';
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+// Sayfa yüklendiğinde ve her 30 saniyede bir güncelle
+document.addEventListener('DOMContentLoaded', function() {
+    updateRealTimeStats();
+    setInterval(updateRealTimeStats, 30000); // 30 saniyede bir
+});
+</script>
+{% endblock %}

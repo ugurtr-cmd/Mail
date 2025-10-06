@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Şablonlar - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">E-posta Şablonları</h2>
+        <p class="mb-0">E-posta şablonlarınızı yönetin</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'create_template' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Yeni Şablon
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                {% if templates %}
+                <div class="row">
+                    {% for template in templates %}
+                    <div class="col-12 col-md-6 col-lg-4 mb-4">
+                        <div class="card h-100 border">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ template.name }}</h5>
+                                <p class="card-text text-muted small">
+                                    {{ template.template_type|title }} Şablonu
+                                </p>
+                                <div class="mb-2">
+                                    <span class="badge bg-{% if template.is_default %}primary{% else %}secondary{% endif %}">
+                                        {{ template.is_default|yesno:"Varsayılan,Özel" }}
+                                    </span>
+                                </div>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        Konu: {{ template.subject|truncatewords:5 }}
+                                    </small>
+                                </p>
+                            </div>
+                            <div class="card-footer bg-transparent">
+                                <div class="btn-group w-100">
+                                    <a href="{% url 'edit_template' template.id %}" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'delete_template' template.id %}" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Henüz şablonunuz yok</h5>
+                    <p class="text-muted">İlk şablonunuzu oluşturarak başlayın</p>
+                    <a href="{% url 'create_template' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>İlk Şablonu Oluştur
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Hazır Şablonlar</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 col-md-4 mb-4">
+                        <div class="card h-100 border">
+                            <div class="card-body text-center">
+                                <i class="fas fa-newspaper fa-2x text-primary mb-3"></i>
+                                <h5>Bülten Şablonu</h5>
+                                <p class="text-muted">Profesyonel bülten tasarımı</p>
+                                <button class="btn btn-outline-primary btn-sm">Kullan</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 mb-4">
+                        <div class="card h-100 border">
+                            <div class="card-body text-center">
+                                <i class="fas fa-gift fa-2x text-success mb-3"></i>
+                                <h5>Promosyon</h5>
+                                <p class="text-muted">Özel teklif ve kampanyalar</p>
+                                <button class="btn btn-outline-primary btn-sm">Kullan</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 mb-4">
+                        <div class="card h-100 border">
+                            <div class="card-body text-center">
+                                <i class="fas fa-user-plus fa-2x text-warning mb-3"></i>
+                                <h5>Hoş Geldin</h5>
+                                <p class="text-muted">Yeni abone hoş geldin e-postası</p>
+                                <button class="btn btn-outline-primary btn-sm">Kullan</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

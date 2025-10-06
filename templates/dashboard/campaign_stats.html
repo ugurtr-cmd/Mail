@@ -1,0 +1,215 @@
+<!-- dashboard/campaign_stats.html - Geliştirilmiş tracking görünümü -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ campaign.name }} İstatistikler - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">{{ campaign.name }} - Detaylı İstatistikler</h2>
+        <p class="mb-0">Kampanya performansı ve takip verileri</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'campaigns' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Kampanyalara Dön
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-6 col-md-3 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h3 class="text-primary">{{ campaign.total_sent }}</h3>
+                <p class="mb-0 text-muted">Gönderilen</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h3 class="text-success">{{ campaign.unique_opens }}</h3>
+                <p class="mb-0 text-muted">Açılma</p>
+                <small class="text-muted">{{ campaign.get_open_rate|floatformat:1 }}%</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h3 class="text-info">{{ campaign.unique_clicks }}</h3>
+                <p class="mb-0 text-muted">Tıklanma</p>
+                <small class="text-muted">{{ campaign.get_click_rate|floatformat:1 }}%</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h3 class="text-warning">{{ campaign.bounces }}</h3>
+                <p class="mb-0 text-muted">Geri Dönüş</p>
+                <small class="text-muted">{{ campaign.get_bounce_rate|floatformat:1 }}%</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">📈 Zaman Çizelgesi</h5>
+            </div>
+            <div class="card-body">
+                <div id="timelineChart">
+                    <canvas id="timelineCanvas" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">🔗 En Çok Tıklanan Linkler</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>URL</th>
+                                <th>Tıklanma</th>
+                                <th>Oran</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for click in top_clicks %}
+                            <tr>
+                                <td>
+                                    <small class="text-truncate d-inline-block" style="max-width: 300px;">
+                                        {{ click.url }}
+                                    </small>
+                                </td>
+                                <td>{{ click.click_count }}</td>
+                                <td>
+                                    {% widthratio click.click_count campaign.unique_clicks 100 as ratio %}
+                                    {{ ratio|floatformat:1 }}%
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">
+                                    Henüz tıklanma verisi yok
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">📊 Performans Özeti</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Açılma Oranı</small>
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-2" style="height: 10px;">
+                            <div class="progress-bar bg-success" 
+                                 style="width: {{ campaign.get_open_rate|floatformat:1 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ campaign.get_open_rate|floatformat:1 }}%</small>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Tıklanma Oranı</small>
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-2" style="height: 10px;">
+                            <div class="progress-bar bg-info" 
+                                 style="width: {{ campaign.get_click_rate|floatformat:1 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ campaign.get_click_rate|floatformat:1 }}%</small>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">Geri Dönüş Oranı</small>
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-2" style="height: 10px;">
+                            <div class="progress-bar bg-warning" 
+                                 style="width: {{ campaign.get_bounce_rate|floatformat:1 }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ campaign.get_bounce_rate|floatformat:1 }}%</small>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="h5 text-primary mb-1" id="realTimeOpens">0</div>
+                        <small class="text-muted">Son 1 Saat</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="h5 text-success mb-1" id="realTimeClicks">0</div>
+                        <small class="text-muted">Son 1 Saat</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">🕒 Son Açılmalar</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for log in recent_opens %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex w-100 justify-content-between">
+                            <small class="text-truncate" style="max-width: 150px;">
+                                {{ log.subscriber.email }}
+                            </small>
+                            <small class="text-muted">
+                                {{ log.opened_at|timesince }} önce
+                            </small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-2">
+                        Henüz açılma yok
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Real-time istatistik güncelleme
+function updateRealTimeStats() {
+    fetch(`/dashboard/api/campaign-stats/{{ campaign.id }}/`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('realTimeOpens').textContent = data.recent_opens;
+            document.getElementById('realTimeClicks').textContent = data.recent_clicks;
+        });
+}
+
+// Sayfa yüklendiğinde ve her 30 saniyede bir güncelle
+document.addEventListener('DOMContentLoaded', function() {
+    updateRealTimeStats();
+    setInterval(updateRealTimeStats, 30000);
+});
+</script>
+{% endblock %}

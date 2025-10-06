@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Otomasyon Düzenle - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Otomasyon Düzenle</h2>
+        <p class="mb-0">{{ automation.name }} otomasyonunu düzenleyin</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <form method="post" id="automationForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Temel Bilgiler</h6>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Otomasyon Adı</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <div class="text-danger small">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">Açıklama</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                <div class="text-danger small">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Tetikleyici Ayarları</h6>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.trigger_type.id_for_label }}" class="form-label">Tetikleyici Türü</label>
+                                {{ form.trigger_type }}
+                                {% if form.trigger_type.errors %}
+                                <div class="text-danger small">{{ form.trigger_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.mail_list.id_for_label }}" class="form-label">Hedef Liste</label>
+                                {{ form.mail_list }}
+                                {% if form.mail_list.errors %}
+                                <div class="text-danger small">{{ form.mail_list.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div id="triggerConfigSection">
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label for="{{ form.trigger_config.id_for_label }}" class="form-label">Tetikleyici Ayarları</label>
+                                    {{ form.trigger_config }}
+                                    <div class="form-text">JSON formatında tetikleyici özelleştirmeleri</div>
+                                    {% if form.trigger_config.errors %}
+                                    <div class="text-danger small">{{ form.trigger_config.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Zamanlama Ayarları</h6>
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="{{ form.delay_minutes.id_for_label }}" class="form-label">Başlangıç Gecikmesi (dakika)</label>
+                                {{ form.delay_minutes }}
+                                <div class="form-text">Tetiklenmeden kaç dakika sonra başlasın</div>
+                                {% if form.delay_minutes.errors %}
+                                <div class="text-danger small">{{ form.delay_minutes.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="{{ form.interval_minutes.id_for_label }}" class="form-label">Gönderim Aralığı (dakika)</label>
+                                {{ form.interval_minutes }}
+                                <div class="form-text">E-postalar arasındaki süre</div>
+                                {% if form.interval_minutes.errors %}
+                                <div class="text-danger small">{{ form.interval_minutes.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'automation_detail' automation.id %}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Otomasyon Adımları Bölümü -->
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Otomasyon Adımları</h5>
+                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addStepModal">
+                    <i class="fas fa-plus me-1"></i>Adım Ekle
+                </button>
+            </div>
+            <div class="card-body">
+                {% if automation.steps.all %}
+                <div class="list-group list-group-flush">
+                    {% for step in automation.steps.all %}
+                    <div class="list-group-item px-0">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                     style="width: 40px; height: 40px;">
+                                    {{ step.step_order }}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <h6 class="mb-1">{{ step.campaign.name }}</h6>
+                                <p class="mb-1 text-muted">{{ step.campaign.subject }}</p>
+                                {% if step.delay_days > 0 %}
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ step.delay_days }} gün sonra gönderilecek
+                                </small>
+                                {% else %}
+                                <small class="text-muted">
+                                    <i class="fas fa-bolt me-1"></i>
+                                    Hemen gönderilecek
+                                </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-auto">
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-secondary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editStepModal"
+                                            data-step-id="{{ step.id }}"
+                                            data-step-order="{{ step.step_order }}"
+                                            data-campaign-id="{{ step.campaign.id }}"
+                                            data-delay-days="{{ step.delay_days }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <a href="{% url 'delete_automation_step' step.id %}" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-steps fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Henüz adım eklenmemiş</h5>
+                    <p class="text-muted">Otomasyona adım eklemek için "Adım Ekle" butonuna tıklayın</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Otomasyon Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Durum:</strong><br>
+                    <span class="badge bg-{% if automation.is_active %}success{% else %}danger{% endif %}">
+                        {{ automation.is_active|yesno:"Aktif,Pasif" }}
+                    </span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Oluşturulma:</strong><br>
+                    {{ automation.created_at|date:"d M Y H:i" }}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Son Güncelleme:</strong><br>
+                    {{ automation.updated_at|date:"d M Y H:i" }}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Toplam Tetiklenme:</strong><br>
+                    {{ automation.total_triggered }} kez
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Toplam Gönderim:</strong><br>
+                    {{ automation.total_sent }} e-posta
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Hızlı Eylemler</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'automation_detail' automation.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-eye me-2"></i>Detayları Görüntüle
+                    </a>
+                    <a href="{% url 'toggle_automation' automation.id %}" class="btn btn-outline-{% if automation.is_active %}warning{% else %}success{% endif %}">
+                        <i class="fas fa-power-off me-2"></i>{{ automation.is_active|yesno:"Durdur,Başlat" }}
+                    </a>
+                    <a href="{% url 'delete_automation' automation.id %}" class="btn btn-outline-danger">
+                        <i class="fas fa-trash me-2"></i>Otomasyonu Sil
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">İstatistikler</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="h4 text-primary mb-1">{{ automation.steps.count }}</div>
+                    <small class="text-muted">Toplam Adım</small>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <div class="h4 text-success mb-1">{{ automation.total_triggered }}</div>
+                    <small class="text-muted">Toplam Tetiklenme</small>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <div class="h4 text-info mb-1">{{ automation.total_sent }}</div>
+                    <small class="text-muted">Toplam Gönderim</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Adım Ekle Modal -->
+<div class="modal fade" id="addStepModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Adım Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'add_automation_step' automation.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Adım Sırası</label>
+                        <input type="number" class="form-control" name="step_order" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kampanya</label>
+                        <select class="form-control" name="campaign" required>
+                            <option value="">Kampanya seçin</option>
+                            {% for campaign in available_campaigns %}
+                            <option value="{{ campaign.id }}">{{ campaign.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Gecikme (gün)</label>
+                        <input type="number" class="form-control" name="delay_days" min="0" value="0">
+                        <div class="form-text">Önceki adımdan kaç gün sonra gönderilsin</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Adım Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Adım Düzenle Modal -->
+<div class="modal fade" id="editStepModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adım Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="" id="editStepForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Adım Sırası</label>
+                        <input type="number" class="form-control" name="step_order" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kampanya</label>
+                        <select class="form-control" name="campaign" required>
+                            <option value="">Kampanya seçin</option>
+                            {% for campaign in available_campaigns %}
+                            <option value="{{ campaign.id }}">{{ campaign.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Gecikme (gün)</label>
+                        <input type="number" class="form-control" name="delay_days" min="0" value="0">
+                        <div class="form-text">Önceki adımdan kaç gün sonra gönderilsin</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Değişiklikleri Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Edit modal için event listener
+document.getElementById('editStepModal').addEventListener('show.bs.modal', function (event) {
+    var button = event.relatedTarget;
+    var stepId = button.getAttribute('data-step-id');
+    var stepOrder = button.getAttribute('data-step-order');
+    var campaignId = button.getAttribute('data-campaign-id');
+    var delayDays = button.getAttribute('data-delay-days');
+    
+    var modal = this;
+    modal.querySelector('#editStepForm').action = "/dashboard/automations/steps/" + stepId + "/edit/";
+    modal.querySelector('input[name="step_order"]').value = stepOrder;
+    modal.querySelector('select[name="campaign"]').value = campaignId;
+    modal.querySelector('input[name="delay_days"]').value = delayDays;
+});
+</script>
+{% endblock %}
+{% endblock %}

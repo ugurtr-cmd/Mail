@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kampanya Zamanla - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Kampanya Zamanla</h2>
+        <p class="mb-0">{{ campaign.name }} kampanyasını planlayın</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <form method="post" id="scheduleForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Zamanlama Detayları</h6>
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="scheduled_date" class="form-label">Tarih</label>
+                                <input type="date" class="form-control" id="scheduled_date" 
+                                       min="{{ today }}" required>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="scheduled_time" class="form-label">Saat</label>
+                                <input type="time" class="form-control" id="scheduled_time" 
+                                       value="09:00" required>
+                            </div>
+                        </div>
+                        <input type="hidden" name="scheduled_time" id="final_datetime">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Gönderim Özeti</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td width="30%"><strong>Kampanya Adı</strong></td>
+                                        <td>{{ campaign.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Konu</strong></td>
+                                        <td>{{ campaign.subject }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Hedef Listeler</strong></td>
+                                        <td>
+                                            <ul class="mb-0">
+                                                {% for mail_list in campaign.mail_lists.all %}
+                                                <li>{{ mail_list.name }} ({{ mail_list.subscriber_count }} abone)</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Toplam Abone</strong></td>
+                                        <td>
+                                            <strong class="text-primary">
+                                                {% with total=campaign.mail_lists.all %}
+                                                    {% widthratio total.0.subscriber_count 1 total.count %}
+                                                {% endwith %}
+                                            </strong> abone
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Planlanan Zaman</strong></td>
+                                        <td>
+                                            <strong class="text-info" id="display_datetime">-</strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Zamanlama İpuçları</h6>
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="setTime('09:00')">
+                                    09:00
+                                </button>
+                                <small class="text-muted">Sabah</small>
+                            </div>
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="setTime('13:00')">
+                                    13:00
+                                </button>
+                                <small class="text-muted">Öğlen</small>
+                            </div>
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="setTime('18:00')">
+                                    18:00
+                                </button>
+                                <small class="text-muted">Akşam</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'campaign_detail' campaign.id %}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-primary" id="scheduleButton">
+                            <i class="fas fa-clock me-2"></i>Kampanyayı Zamanla
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">En İyi Gönderim Zamanları</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-success">📈 En Yüksek Açılma Oranı</h6>
+                    <p class="mb-1"><strong>Salı, 10:00-11:00</strong></p>
+                    <small class="text-muted">Ortalama açılma: 42%</small>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-info">👥 En Yüksek Tıklanma</h6>
+                    <p class="mb-1"><strong>Perşembe, 14:00-15:00</strong></p>
+                    <small class="text-muted">Ortalama tıklanma: 8.5%</small>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-warning">🕒 Genel Öneri</h6>
+                    <p class="mb-1"><strong>Hafta içi, 09:00-12:00</strong></p>
+                    <small class="text-muted">En tutarlı performans</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Planlanan Kampanyalar</h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_campaigns %}
+                <div class="list-group list-group-flush">
+                    {% for upcoming in upcoming_campaigns %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ upcoming.name }}</h6>
+                            <small>{{ upcoming.scheduled_time|date:"H:i" }}</small>
+                        </div>
+                        <small class="text-muted">{{ upcoming.scheduled_time|date:"d M" }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center mb-0">Planlanan kampanya yok</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Zaman Dilimi</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>Mevcut:</strong> Europe/Istanbul</p>
+                <p class="mb-0 text-muted small">
+                    Tüm zamanlar yerel saat diliminize göre gösterilir.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Bugünün tarihini varsayılan olarak ayarla
+document.getElementById('scheduled_date').value = '{{ today }}';
+
+function updateDateTime() {
+    const date = document.getElementById('scheduled_date').value;
+    const time = document.getElementById('scheduled_time').value;
+    
+    if (date && time) {
+        const datetime = `${date}T${time}`;
+        document.getElementById('final_datetime').value = datetime;
+        
+        // Görsel gösterim
+        const displayDate = new Date(datetime);
+        const options = { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        document.getElementById('display_datetime').textContent = 
+            displayDate.toLocaleDateString('tr-TR', options);
+    }
+}
+
+function setTime(time) {
+    document.getElementById('scheduled_time').value = time;
+    updateDateTime();
+}
+
+// Input değişikliklerini dinle
+document.getElementById('scheduled_date').addEventListener('change', updateDateTime);
+document.getElementById('scheduled_time').addEventListener('change', updateDateTime);
+
+// Sayfa yüklendiğinde çalıştır
+document.addEventListener('DOMContentLoaded', updateDateTime);
+
+// Form gönderim kontrolü
+document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+    const datetime = document.getElementById('final_datetime').value;
+    if (!datetime) {
+        e.preventDefault();
+        alert('Lütfen tarih ve saat seçin');
+        return;
+    }
+    
+    const selectedDate = new Date(datetime);
+    const now = new Date();
+    
+    if (selectedDate <= now) {
+        e.preventDefault();
+        alert('Geçmiş bir tarih seçemezsiniz');
+        return;
+    }
+    
+    const button = document.getElementById('scheduleButton');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Planlanıyor...';
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}E-posta Ayarları - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">E-posta Ayarları</h2>
+        <p class="mb-0">SMTP ve e-posta gönderim ayarlarınızı yapılandırın</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <h6 class="mb-3">SMTP Ayarları</h6>
+                    
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="{{ form.smtp_host.id_for_label }}" class="form-label">SMTP Sunucusu</label>
+                            {{ form.smtp_host }}
+                            {% if form.smtp_host.errors %}
+                            <div class="text-danger small">{{ form.smtp_host.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="{{ form.smtp_port.id_for_label }}" class="form-label">SMTP Port</label>
+                            {{ form.smtp_port }}
+                            {% if form.smtp_port.errors %}
+                            <div class="text-danger small">{{ form.smtp_port.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="{{ form.smtp_username.id_for_label }}" class="form-label">SMTP Kullanıcı Adı</label>
+                            {{ form.smtp_username }}
+                            {% if form.smtp_username.errors %}
+                            <div class="text-danger small">{{ form.smtp_username.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="{{ form.smtp_password.id_for_label }}" class="form-label">SMTP Şifre</label>
+                            {{ form.smtp_password }}
+                            {% if form.smtp_password.errors %}
+                            <div class="text-danger small">{{ form.smtp_password.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="form-check form-switch">
+                                {{ form.use_tls }}
+                                <label class="form-check-label" for="{{ form.use_tls.id_for_label }}">
+                                    TLS Kullan
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h6 class="mb-3">Gönderim Ayarları</h6>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.default_from_email.id_for_label }}" class="form-label">Varsayılan Gönderen</label>
+                            {{ form.default_from_email }}
+                            {% if form.default_from_email.errors %}
+                            <div class="text-danger small">{{ form.default_from_email.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label">Günlük Gönderim Limiti</label>
+                            <input type="number" class="form-control" value="1000">
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label class="form-label">Saatlik Gönderim Limiti</label>
+                            <input type="number" class="form-control" value="100">
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'settings' %}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-primary">Ayarları Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">SMTP Test</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">SMTP ayarlarınızı test edin:</p>
+                <div class="mb-3">
+                    <label class="form-label">Test E-postası</label>
+                    <input type="email" class="form-control" placeholder="test@ornek.com">
+                </div>
+                <button class="btn btn-outline-primary w-100">
+                    <i class="fas fa-paper-plane me-2"></i>Test E-postası Gönder
+                </button>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Popüler SMTP Servisleri</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <strong>Gmail:</strong> smtp.gmail.com:587
+                    </li>
+                    <li class="mb-2">
+                        <strong>Outlook:</strong> smtp-mail.outlook.com:587
+                    </li>
+                    <li class="mb-2">
+                        <strong>Yandex:</strong> smtp.yandex.com:587
+                    </li>
+                    <li class="mb-2">
+                        <strong>SendGrid:</strong> smtp.sendgrid.net:587
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

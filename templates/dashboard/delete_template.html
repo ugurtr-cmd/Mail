@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Şablon Sil - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-6">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-file-alt fa-3x text-danger"></i>
+                </div>
+                
+                <h4 class="mb-3">Şablon Sil</h4>
+                <p class="text-muted mb-4">
+                    "<strong>{{ template.name }}</strong>" şablonunu silmek istediğinizden emin misiniz?
+                </p>
+                
+                <div class="alert alert-warning text-start">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Bu işlem geri alınamaz!</strong><br>
+                    <small class="mb-0">
+                        • Şablon tamamen silinecek<br>
+                        • Bu şablonu kullanan kampanyalar etkilenecek<br>
+                        • İçerik ve HTML kodu kaybolacak
+                    </small>
+                </div>
+                
+                {% if template.campaign_set.exists %}
+                <div class="alert alert-danger text-start">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Dikkat!</strong> Bu şablon {{ template.campaign_set.count }} kampanyada kullanılıyor.
+                    <br>
+                    <small>Şablonu silerseniz, bu kampanyalar varsayılan şablona dönecek.</small>
+                </div>
+                {% endif %}
+                
+                <div class="mb-4 p-3 bg-light rounded">
+                    <h6>Şablon Bilgileri:</h6>
+                    <p class="mb-1"><strong>Ad:</strong> {{ template.name }}</p>
+                    <p class="mb-1"><strong>Tür:</strong> {{ template.get_template_type_display }}</p>
+                    <p class="mb-1"><strong>Konu:</strong> {{ template.subject }}</p>
+                    <p class="mb-1"><strong>Durum:</strong> 
+                        <span class="badge bg-{% if template.is_default %}primary{% else %}secondary{% endif %}">
+                            {{ template.is_default|yesno:"Varsayılan,Özel" }}
+                        </span>
+                    </p>
+                    <p class="mb-1"><strong>Kullanılan Kampanyalar:</strong> {{ template.campaign_set.count }}</p>
+                    <p class="mb-0"><strong>Oluşturulma:</strong> {{ template.created_at|date:"d M Y" }}</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a href="{% url 'templates' %}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Evet, Şablonu Sil
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

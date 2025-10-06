@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Webhook Sil - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-6">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-link fa-3x text-danger"></i>
+                </div>
+                
+                <h4 class="mb-3">Webhook Sil</h4>
+                <p class="text-muted mb-4">
+                    "<strong>{{ webhook.name }}</strong>" webhook'unu silmek istediğinizden emin misiniz?
+                </p>
+                
+                <div class="alert alert-warning text-start">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Bu işlem geri alınamaz!</strong><br>
+                    <small class="mb-0">
+                        • Webhook tamamen silinecek<br>
+                        • {{ webhook.get_event_type_display }} olayları artık tetiklenmeyecek<br>
+                        • Entegrasyonlar etkilenecek
+                    </small>
+                </div>
+                
+                <div class="mb-4 p-3 bg-light rounded">
+                    <h6>Webhook Bilgileri:</h6>
+                    <p class="mb-1"><strong>Ad:</strong> {{ webhook.name }}</p>
+                    <p class="mb-1"><strong>URL:</strong> {{ webhook.url }}</p>
+                    <p class="mb-1"><strong>Olay Türü:</strong> {{ webhook.get_event_type_display }}</p>
+                    <p class="mb-1"><strong>Durum:</strong> 
+                        <span class="badge bg-{% if webhook.is_active %}success{% else %}danger{% endif %}">
+                            {{ webhook.is_active|yesno:"Aktif,Pasif" }}
+                        </span>
+                    </p>
+                    <p class="mb-0"><strong>Oluşturulma:</strong> {{ webhook.created_at|date:"d M Y" }}</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a href="{% url 'webhooks' %}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Evet, Webhook'u Sil
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

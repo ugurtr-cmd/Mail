@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Yeni Kampanya - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Yeni Kampanya</h2>
+        <p class="mb-0">Yeni bir e-posta kampanyası oluşturun</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <form method="post" id="campaignForm">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Kampanya Adı</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="text-danger small">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.subject.id_for_label }}" class="form-label">Konu</label>
+                            {{ form.subject }}
+                            {% if form.subject.errors %}
+                            <div class="text-danger small">{{ form.subject.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.preheader.id_for_label }}" class="form-label">Ön Başlık</label>
+                            {{ form.preheader }}
+                            <div class="form-text">E-posta önizlemede görünecek kısa açıklama</div>
+                            {% if form.preheader.errors %}
+                            <div class="text-danger small">{{ form.preheader.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.mail_lists.id_for_label }}" class="form-label">Hedef Listeler</label>
+                            {{ form.mail_lists }}
+                            {% if form.mail_lists.errors %}
+                            <div class="text-danger small">{{ form.mail_lists.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.content.id_for_label }}" class="form-label">İçerik</label>
+                            {{ form.content }}
+                            {% if form.content.errors %}
+                            <div class="text-danger small">{{ form.content.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="form-check form-switch">
+                                {{ form.is_ab_test }}
+                                <label class="form-check-label" for="{{ form.is_ab_test.id_for_label }}">
+                                    A/B Testi Yap
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="abTestSection" style="display: none;">
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.ab_test_subject.id_for_label }}" class="form-label">A/B Test Konusu</label>
+                                {{ form.ab_test_subject }}
+                                {% if form.ab_test_subject.errors %}
+                                <div class="text-danger small">{{ form.ab_test_subject.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.ab_test_percentage.id_for_label }}" class="form-label">Test Yüzdesi</label>
+                                {{ form.ab_test_percentage }}
+                                <div class="form-text">Hangi yüzdeye hangi konunun gönderileceği</div>
+                                {% if form.ab_test_percentage.errors %}
+                                <div class="text-danger small">{{ form.ab_test_percentage.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Gönderim Seçenekleri</h6>
+                                    
+                                    <div class="form-check mb-2">
+                                        {{ form.send_now }}
+                                        <label class="form-check-label" for="{{ form.send_now.id_for_label }}">
+                                            Hemen Gönder
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check mb-2">
+                                        {{ form.schedule_later }}
+                                        <label class="form-check-label" for="{{ form.schedule_later.id_for_label }}">
+                                            Sonra Gönder
+                                        </label>
+                                    </div>
+                                    
+                                    <div id="scheduleSection" style="display: none;">
+                                        <label for="{{ form.scheduled_time.id_for_label }}" class="form-label">Planlanan Zaman</label>
+                                        {{ form.scheduled_time }}
+                                        {% if form.scheduled_time.errors %}
+                                        <div class="text-danger small">{{ form.scheduled_time.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'campaigns' %}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-primary">Kampanyayı Kaydet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">🤖 AI Konu Önerisi</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <input type="text" id="content-input" class="form-control" 
+                           placeholder="Kampanya içeriğini kısaca açıklayın...">
+                </div>
+                <button onclick="getAISuggestions()" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-magic me-2"></i>Öneri Al
+                </button>
+                <div id="suggestions-container" class="mt-3" style="display: none;">
+                    <h6>Önerilen Konular:</h6>
+                    <div id="suggestions-list" class="list-group"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">İpuçları</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Konu satırı kısa ve etkili olmalı
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Kişiselleştirilmiş içerik daha iyi sonuç verir
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Mobil uyumluluğu test edin
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        A/B testi ile performansı optimize edin
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// A/B Test section toggle
+document.getElementById('{{ form.is_ab_test.id_for_label }}').addEventListener('change', function() {
+    document.getElementById('abTestSection').style.display = this.checked ? 'block' : 'none';
+});
+
+// Schedule section toggle
+document.getElementById('{{ form.schedule_later.id_for_label }}').addEventListener('change', function() {
+    document.getElementById('scheduleSection').style.display = this.checked ? 'block' : 'none';
+});
+
+// AI Suggestions
+function getAISuggestions() {
+    const content = document.getElementById('content-input').value;
+    if (!content) {
+        alert('Lütfen içerik giriniz');
+        return;
+    }
+
+    fetch(`/dashboard/get-ai-subject-suggestion/?content=${encodeURIComponent(content)}`)
+        .then(response => response.json())
+        .then(data => {
+            const container = document.getElementById('suggestions-container');
+            const list = document.getElementById('suggestions-list');
+            
+            list.innerHTML = '';
+            data.suggestions.forEach(suggestion => {
+                const item = document.createElement('a');
+                item.href = '#';
+                item.className = 'list-group-item list-group-item-action';
+                item.textContent = suggestion;
+                item.onclick = function(e) {
+                    e.preventDefault();
+                    document.getElementById('{{ form.subject.id_for_label }}').value = suggestion;
+                };
+                list.appendChild(item);
+            });
+            
+            container.style.display = 'block';
+        });
+}
+</script>
+{% endblock %}

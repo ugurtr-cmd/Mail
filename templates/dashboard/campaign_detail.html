@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ campaign.name }} - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">{{ campaign.name }}</h2>
+        <p class="mb-0">Kampanya detayları ve içerik</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group">
+            <a href="{% url 'campaign_stats' campaign.id %}" class="btn btn-outline-info">
+                <i class="fas fa-chart-bar me-2"></i>İstatistikler
+            </a>
+            {% if campaign.status == 'draft' %}
+            <a href="{% url 'edit_campaign' campaign.id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-edit me-2"></i>Düzenle
+            </a>
+            <a href="{% url 'send_campaign' campaign.id %}" class="btn btn-success">
+                <i class="fas fa-paper-plane me-2"></i>Gönder
+            </a>
+            {% endif %}
+            <a href="{% url 'duplicate_campaign' campaign.id %}" class="btn btn-outline-warning">
+                <i class="fas fa-copy me-2"></i>Kopyala
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12 col-md-3">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h6 class="card-title text-uppercase text-muted mb-0">Durum</h6>
+                <span class="h4 mt-2">
+                    <span class="badge bg-{% if campaign.status == 'sent' %}success{% elif campaign.status == 'sending' %}warning{% elif campaign.status == 'failed' %}danger{% else %}secondary{% endif %}">
+                        {{ campaign.get_status_display }}
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h6 class="card-title text-uppercase text-muted mb-0">Hedef</h6>
+                <span class="h4 mt-2">{{ campaign.mail_lists.count }} liste</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h6 class="card-title text-uppercase text-muted mb-0">Tahmini</h6>
+                <span class="h4 mt-2">
+                    {% with total=campaign.mail_lists.all %}
+                        {% widthratio total.0.subscriber_count 1 total.count %} abone
+                    {% endwith %}
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h6 class="card-title text-uppercase text-muted mb-0">Oluşturulma</h6>
+                <span class="h4 mt-2">{{ campaign.created_at|date:"d.m.Y" }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Kampanya İçeriği</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6>Konu:</h6>
+                    <p class="fs-5">{{ campaign.subject }}</p>
+                </div>
+                
+                {% if campaign.preheader %}
+                <div class="mb-4">
+                    <h6>Ön Başlık:</h6>
+                    <p class="text-muted">{{ campaign.preheader }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="mb-4">
+                    <h6>İçerik:</h6>
+                    <div class="border rounded p-4 bg-light">
+                        {{ campaign.content|linebreaks }}
+                    </div>
+                </div>
+                
+                {% if campaign.html_content %}
+                <div class="mb-4">
+                    <h6>HTML İçerik:</h6>
+                    <div class="border rounded p-3">
+                        <pre class="mb-0"><code>{{ campaign.html_content }}</code></pre>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Hedef Listeler</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Liste Adı</th>
+                                <th>Tür</th>
+                                <th>Abone Sayısı</th>
+                                <th>Durum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mail_list in campaign.mail_lists.all %}
+                            <tr>
+                                <td>{{ mail_list.name }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ mail_list.get_list_type_display }}</span>
+                                </td>
+                                <td>{{ mail_list.subscriber_count }}</td>
+                                <td>
+                                    <span class="badge bg-{% if mail_list.is_active %}success{% else %}danger{% endif %}">
+                                        {{ mail_list.is_active|yesno:"Aktif,Pasif" }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Kampanya Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Oluşturulma:</strong><br>
+                    {{ campaign.created_at|date:"d M Y H:i" }}
+                </div>
+                
+                {% if campaign.scheduled_time %}
+                <div class="mb-3">
+                    <strong>Planlanan Zaman:</strong><br>
+                    {{ campaign.scheduled_time|date:"d M Y H:i" }}
+                </div>
+                {% endif %}
+                
+                {% if campaign.sent_at %}
+                <div class="mb-3">
+                    <strong>Gönderim Zamanı:</strong><br>
+                    {{ campaign.sent_at|date:"d M Y H:i" }}
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <strong>Şablon:</strong><br>
+                    {{ campaign.template.name|default:"Özel içerik" }}
+                </div>
+                
+                {% if campaign.is_ab_test %}
+                <div class="mb-3">
+                    <strong>A/B Test:</strong><br>
+                    <span class="badge bg-info">Aktif</span>
+                    <small class="text-muted d-block">{{ campaign.ab_test_percentage }}% test grubu</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Hızlı Eylemler</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    {% if campaign.status == 'draft' %}
+                    <a href="{% url 'send_campaign' campaign.id %}" class="btn btn-success">
+                        <i class="fas fa-paper-plane me-2"></i>Hemen Gönder
+                    </a>
+                    <a href="{% url 'schedule_campaign' campaign.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-clock me-2"></i>Zamanla
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'duplicate_campaign' campaign.id %}" class="btn btn-outline-warning">
+                        <i class="fas fa-copy me-2"></i>Kampanyayı Kopyala
+                    </a>
+                    
+                    {% if campaign.status == 'draft' %}
+                    <a href="{% url 'edit_campaign' campaign.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-edit me-2"></i>Düzenle
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'delete_campaign' campaign.id %}" class="btn btn-outline-danger">
+                        <i class="fas fa-trash me-2"></i>Sil
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Önizleme</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Kampanyayı önizle:</p>
+                <button class="btn btn-outline-primary w-100 mb-2">
+                    <i class="fas fa-desktop me-2"></i>Masaüstü Görünümü
+                </button>
+                <button class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-mobile-alt me-2"></i>Mobil Görünümü
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

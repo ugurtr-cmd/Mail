@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Abone Ekle - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Yeni Abone Ekle</h2>
+        <p class="mb-0">Listelerinize yeni abone ekleyin</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-md-8">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.mail_list.id_for_label }}" class="form-label">Mail Listesi</label>
+                            {{ form.mail_list }}
+                            {% if form.mail_list.errors %}
+                            <div class="text-danger small">{{ form.mail_list.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">E-posta</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="text-danger small">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Ad Soyad</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="text-danger small">{{ form.name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">Telefon</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                            <div class="text-danger small">{{ form.phone.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.company.id_for_label }}" class="form-label">Şirket</label>
+                            {{ form.company }}
+                            {% if form.company.errors %}
+                            <div class="text-danger small">{{ form.company.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.source.id_for_label }}" class="form-label">Kaynak</label>
+                            {{ form.source }}
+                            <div class="form-text">Abonenin nereden eklendiği (web sitesi, form, vs.)</div>
+                            {% if form.source.errors %}
+                            <div class="text-danger small">{{ form.source.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="{{ form.tags.id_for_label }}" class="form-label">Etiketler</label>
+                            {{ form.tags }}
+                            <div class="form-text">Virgülle ayırarak etiket ekleyin (müşteri, vip, test)</div>
+                            {% if form.tags.errors %}
+                            <div class="text-danger small">{{ form.tags.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'mail_lists' %}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-primary">Abone Ekle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-md-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Toplu Ekleme</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Çok sayıda abone eklemek için:</p>
+                <a href="#" class="btn btn-outline-primary w-100 mb-2">
+                    <i class="fas fa-upload me-2"></i>CSV İçe Aktar
+                </a>
+                <a href="#" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-link me-2"></i>Kayıt Formu Oluştur
+                </a>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">İpuçları</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Geçerli e-posta adresi kullanın
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Etiketlerle segmentasyon yapın
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Kaynak bilgisi takip için önemli
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Yeni Otomasyon - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Yeni Otomasyon</h2>
+        <p class="mb-0">Otomatik e-posta serisi oluşturun</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <form method="post" id="automationForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Temel Bilgiler</h6>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Otomasyon Adı</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <div class="text-danger small">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">Açıklama</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                <div class="text-danger small">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Tetikleyici Ayarları</h6>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.trigger_type.id_for_label }}" class="form-label">Tetikleyici Türü</label>
+                                {{ form.trigger_type }}
+                                {% if form.trigger_type.errors %}
+                                <div class="text-danger small">{{ form.trigger_type.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.mail_list.id_for_label }}" class="form-label">Hedef Liste</label>
+                                {{ form.mail_list }}
+                                {% if form.mail_list.errors %}
+                                <div class="text-danger small">{{ form.mail_list.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div id="triggerConfigSection" style="display: none;">
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label for="{{ form.trigger_config.id_for_label }}" class="form-label">Tetikleyici Ayarları</label>
+                                    {{ form.trigger_config }}
+                                    <div class="form-text">JSON formatında tetikleyici özelleştirmeleri</div>
+                                    {% if form.trigger_config.errors %}
+                                    <div class="text-danger small">{{ form.trigger_config.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Zamanlama Ayarları</h6>
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="{{ form.delay_minutes.id_for_label }}" class="form-label">Başlangıç Gecikmesi (dakika)</label>
+                                {{ form.delay_minutes }}
+                                <div class="form-text">Tetiklenmeden kaç dakika sonra başlasın</div>
+                                {% if form.delay_minutes.errors %}
+                                <div class="text-danger small">{{ form.delay_minutes.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label for="{{ form.interval_minutes.id_for_label }}" class="form-label">Gönderim Aralığı (dakika)</label>
+                                {{ form.interval_minutes }}
+                                <div class="form-text">E-postalar arasındaki süre</div>
+                                {% if form.interval_minutes.errors %}
+                                <div class="text-danger small">{{ form.interval_minutes.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'automations' %}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-primary">Otomasyonu Oluştur</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Tetikleyici Türleri</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-success">📥 Abonelik</h6>
+                    <p class="small text-muted mb-2">Yeni abone olduğunda tetiklenir</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-primary">📅 Tarih</h6>
+                    <p class="small text-muted mb-2">Belirli tarihte tetiklenir</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-info">🎯 Davranış</h6>
+                    <p class="small text-muted mb-2">Belirli eylemlerde tetiklenir</p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-warning">🔗 Webhook</h6>
+                    <p class="small text-muted mb-2">Dış sistemlerden tetiklenir</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Örnek Otomasyonlar</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-primary">Hoş Geldin Serisi</h6>
+                    <p class="small text-muted mb-2">
+                        <strong>Tetikleyici:</strong> Abonelik<br>
+                        <strong>Adımlar:</strong> 3 e-posta<br>
+                        <strong>Süre:</strong> 7 gün
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-success">Satış Sonrası Takip</h6>
+                    <p class="small text-muted mb-2">
+                        <strong>Tetikleyici:</strong> Satın alma<br>
+                        <strong>Adımlar:</strong> 5 e-posta<br>
+                        <strong>Süre:</strong> 30 gün
+                    </p>
+                </div>
+                
+                <div class="mb-3">
+                    <h6 class="text-warning">Terk Sepet Hatırlatma</h6>
+                    <p class="small text-muted mb-2">
+                        <strong>Tetikleyici:</strong> Sepet terk<br>
+                        <strong>Adımlar:</strong> 3 e-posta<br>
+                        <strong>Süre:</strong> 3 gün
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">İpuçları</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Tetikleyiciyi dikkatli seçin
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Zamanlamayı kullanıcı deneyimine göre ayarlayın
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Çok sık gönderim yapmaktan kaçının
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-lightbulb text-warning me-2"></i>
+                        Otomasyonu test etmeyi unutmayın
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Tetikleyici türüne göre ayar bölümünü göster/gizle
+document.getElementById('{{ form.trigger_type.id_for_label }}').addEventListener('change', function() {
+    const triggerConfigSection = document.getElementById('triggerConfigSection');
+    if (this.value !== 'subscription') {
+        triggerConfigSection.style.display = 'block';
+    } else {
+        triggerConfigSection.style.display = 'none';
+    }
+});
+
+// Sayfa yüklendiğinde tetikle
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('{{ form.trigger_type.id_for_label }}').dispatchEvent(new Event('change'));
+});
+</script>
+{% endblock %}
+{% endblock %}

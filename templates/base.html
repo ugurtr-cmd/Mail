@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EmailOtomasyon - Profesyonel E-posta Pazarlama{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: #fff;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+        }
+        .sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.2);
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .stats-card {
+            transition: transform 0.3s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <!-- Dashboard Layout -->
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">
+                            <i class="fas fa-envelope-circle-check me-2"></i>
+                            EmailOtomasyon
+                        </h4>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                               href="{% url 'dashboard' %}">
+                                <i class="fas fa-home me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'mail_lists' %}active{% endif %}" 
+                               href="{% url 'mail_lists' %}">
+                                <i class="fas fa-list me-2"></i>
+                                Mail Listeleri
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'campaigns' %}active{% endif %}" 
+                               href="{% url 'campaigns' %}">
+                                <i class="fas fa-envelope me-2"></i>
+                                Kampanyalar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'automations' %}active{% endif %}" 
+                               href="{% url 'automations' %}">
+                                <i class="fas fa-robot me-2"></i>
+                                Otomasyon
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'analytics' %}active{% endif %}" 
+                               href="{% url 'analytics' %}">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Analitik
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" 
+                               href="{% url 'profile' %}">
+                                <i class="fas fa-user me-2"></i>
+                                Profil
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <!-- Navbar -->
+                <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+                    <div class="container-fluid">
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav ms-auto">
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" 
+                                       data-bs-toggle="dropdown">
+                                        <i class="fas fa-user-circle me-1"></i>
+                                        {{ user.username }}
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="{% url 'profile' %}">Profil</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="{% url 'logout' %}">Çıkış Yap</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Content -->
+                <div class="container-fluid py-4">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+    {% else %}
+    <!-- Public Website Layout -->
+    {% block public_content %}{% endblock %}
+    {% endif %}
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+        // Global functions
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.prepend(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Otomasyon - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Otomasyonlar</h2>
+        <p class="mb-0">Otomatik e-posta serilerinizi yönetin</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'create_automation' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Yeni Otomasyon
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow">
+    <div class="card-body">
+        {% if automations %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Otomasyon Adı</th>
+                        <th>Tetikleyici</th>
+                        <th>Hedef Liste</th>
+                        <th>Durum</th>
+                        <th>Adım Sayısı</th>
+                        <th>Tetiklenme</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for automation in automations %}
+                    <tr>
+                        <td>
+                            <strong>{{ automation.name }}</strong>
+                            {% if automation.description %}
+                            <br><small class="text-muted">{{ automation.description|truncatewords:10 }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ automation.get_trigger_type_display }}</span>
+                        </td>
+                        <td>{{ automation.mail_list.name }}</td>
+                        <td>
+                            <span class="badge bg-{% if automation.is_active %}success{% else %}danger{% endif %}">
+                                {{ automation.is_active|yesno:"Aktif,Pasif" }}
+                            </span>
+                        </td>
+                        <td>{{ automation.steps.count }}</td>
+                        <td>{{ automation.total_triggered }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'automation_detail' automation.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'edit_automation' automation.id %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'toggle_automation' automation.id %}" class="btn btn-sm btn-outline-{% if automation.is_active %}warning{% else %}success{% endif %}">
+                                    <i class="fas fa-power-off"></i>
+                                </a>
+                                <a href="{% url 'delete_automation' automation.id %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-robot fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">Henüz otomasyonunuz yok</h5>
+            <p class="text-muted">İlk otomasyonunuzu oluşturarak başlayın</p>
+            <a href="{% url 'create_automation' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>İlk Otomasyonu Oluştur
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Otomasyon Şablonları</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 border">
+                            <div class="card-body text-center">
+                                <i class="fas fa-user-plus fa-2x text-primary mb-3"></i>
+                                <h5>Hoş Geldin Serisi</h5>
+                                <p class="text-muted">Yeni abonelere otomatik hoş geldin e-postaları gönderin</p>
+                                <button class="btn btn-outline-primary btn-sm">Kullan</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 border">
+                            <div class="card-body text-center">
+                                <i class="fas fa-shopping-cart fa-2x text-success mb-3"></i>
+                                <h5>Satış Sonrası</h5>
+                                <p class="text-muted">Satın alma sonrası takip e-postaları</p>
+                                <button class="btn btn-outline-primary btn-sm">Kullan</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 border">
+                            <div class="card-body text-center">
+                                <i class="fas fa-birthday-cake fa-2x text-warning mb-3"></i>
+                                <h5>Doğum Günü</h5>
+                                <p class="text-muted">Doğum günü kutlamaları ve özel teklifler</p>
+                                <button class="btn btn-outline-primary btn-sm">Kullan</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

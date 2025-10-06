@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ automation.name }} - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">{{ automation.name }}</h2>
+        <p class="mb-0">Otomasyon detayları ve adımlar</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group">
+            <a href="{% url 'edit_automation' automation.id %}" class="btn btn-outline-secondary">
+                <i class="fas fa-edit me-2"></i>Düzenle
+            </a>
+            <a href="{% url 'toggle_automation' automation.id %}" class="btn btn-outline-{% if automation.is_active %}warning{% else %}success{% endif %}">
+                <i class="fas fa-power-off me-2"></i>{{ automation.is_active|yesno:"Durdur,Başlat" }}
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12 col-md-3">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h6 class="card-title text-uppercase text-muted mb-0">Durum</h6>
+                <span class="h4 mt-2">
+                    <span class="badge bg-{% if automation.is_active %}success{% else %}danger{% endif %}">
+                        {{ automation.is_active|yesno:"Aktif,Pasif" }}
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h6 class="card-title text-uppercase text-muted mb-0">Adımlar</h6>
+                <span class="h4 mt-2">{{ steps.count }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h6 class="card-title text-uppercase text-muted mb-0">Tetiklenme</h6>
+                <span class="h4 mt-2">{{ automation.total_triggered }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-3">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center">
+                <h6 class="card-title text-uppercase text-muted mb-0">Gönderim</h6>
+                <span class="h4 mt-2">{{ automation.total_sent }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Otomasyon Adımları</h5>
+            </div>
+            <div class="card-body">
+                {% if steps %}
+                <div class="list-group list-group-flush">
+                    {% for step in steps %}
+                    <div class="list-group-item px-0">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                     style="width: 40px; height: 40px;">
+                                    {{ step.step_order }}
+                                </div>
+                            </div>
+                            <div class="col">
+                                <h6 class="mb-1">{{ step.campaign.name }}</h6>
+                                <p class="mb-1 text-muted">{{ step.campaign.subject }}</p>
+                                {% if step.delay_days > 0 %}
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ step.delay_days }} gün sonra gönderilecek
+                                </small>
+                                {% else %}
+                                <small class="text-muted">
+                                    <i class="fas fa-bolt me-1"></i>
+                                    Hemen gönderilecek
+                                </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-auto">
+                                <span class="badge bg-secondary">{{ step.campaign.get_status_display }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-steps fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Henüz adım eklenmemiş</h5>
+                    <p class="text-muted">Bu otomasyona adım eklemek için düzenle butonuna tıklayın</p>
+                    <a href="{% url 'edit_automation' automation.id %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Adım Ekle
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Otomasyon Tetikleyicisi</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <strong>Tetikleyici Türü:</strong><br>
+                        <span class="badge bg-info">{{ automation.get_trigger_type_display }}</span>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <strong>Hedef Liste:</strong><br>
+                        {{ automation.mail_list.name }}
+                    </div>
+                </div>
+                
+                {% if automation.delay_minutes > 0 %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <strong>Başlangıç Gecikmesi:</strong><br>
+                        {{ automation.delay_minutes }} dakika
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if automation.interval_minutes != 60 %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <strong>Gönderim Aralığı:</strong><br>
+                        {{ automation.interval_minutes }} dakika
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Otomasyon Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Açıklama:</strong><br>
+                    {{ automation.description|default:"Açıklama eklenmemiş" }}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Oluşturulma:</strong><br>
+                    {{ automation.created_at|date:"d M Y H:i" }}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Son Güncelleme:</strong><br>
+                    {{ automation.updated_at|date:"d M Y H:i" }}
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Toplam Tetiklenme:</strong><br>
+                    {{ automation.total_triggered }} kez
+                </div>
+                
+                <div class="mb-3">
+                    <strong>Toplam Gönderim:</strong><br>
+                    {{ automation.total_sent }} e-posta
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Hızlı Eylemler</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'edit_automation' automation.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-edit me-2"></i>Otomasyonu Düzenle
+                    </a>
+                    <a href="{% url 'toggle_automation' automation.id %}" class="btn btn-outline-{% if automation.is_active %}warning{% else %}success{% endif %}">
+                        <i class="fas fa-power-off me-2"></i>{{ automation.is_active|yesno:"Durdur,Başlat" }}
+                    </a>
+                    <a href="{% url 'delete_automation' automation.id %}" class="btn btn-outline-danger">
+                        <i class="fas fa-trash me-2"></i>Otomasyonu Sil
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Canlı İstatistik</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center">
+                    <div class="h4 text-primary mb-1">{{ automation.total_triggered }}</div>
+                    <small class="text-muted">Toplam Tetiklenme</small>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <div class="h4 text-success mb-1">{{ automation.total_sent }}</div>
+                    <small class="text-muted">Toplam Gönderim</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analitik - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Analitik Genel Bakış</h2>
+        <p class="mb-0">Kampanya performansınızı takip edin</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-primary active">30 Gün</button>
+            <button type="button" class="btn btn-outline-primary">7 Gün</button>
+            <button type="button" class="btn btn-outline-primary">90 Gün</button>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12 col-sm-6 col-xl-3 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 class="card-title text-uppercase text-muted mb-0">Gönderilen</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ total_emails_sent }}</span>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-paper-plane fa-2x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 class="card-title text-uppercase text-muted mb-0">Açılma Oranı</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ open_rate }}%</span>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-envelope-open fa-2x text-success"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 class="card-title text-uppercase text-muted mb-0">Tıklanma Oranı</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ click_rate }}%</span>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-mouse-pointer fa-2x text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-3 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col">
+                        <h5 class="card-title text-uppercase text-muted mb-0">Toplam Açılma</h5>
+                        <span class="h2 font-weight-bold mb-0">{{ total_opens }}</span>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-chart-line fa-2x text-warning"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Performans Grafiği</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <!-- Buraya chart.js grafiği gelecek -->
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Grafik verileri yakında eklenecek</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4 mb-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">En İyi Performans</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item px-0">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h6 class="mb-0">Hoş Geldin Kampanyası</h6>
+                                <small class="text-muted">45% açılma oranı</small>
+                            </div>
+                            <div class="col-auto">
+                                <span class="badge bg-success">En İyi</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group-item px-0">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h6 class="mb-0">Özel Teklif</h6>
+                                <small class="text-muted">32% açılma oranı</small>
+                            </div>
+                            <div class="col-auto">
+                                <span class="badge bg-warning">İyi</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="list-group-item px-0">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <h6 class="mb-0">Haftalık Bülten</h6>
+                                <small class="text-muted">28% açılma oranı</small>
+                            </div>
+                            <div class="col-auto">
+                                <span class="badge bg-info">Orta</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Hızlı İstatistikler</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Ortalama Açılma Oranı</small>
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: {{ open_rate }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ open_rate }}%</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Ortalama Tıklanma Oranı</small>
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                            <div class="progress-bar bg-info" style="width: {{ click_rate }}%"></div>
+                        </div>
+                        <small class="text-muted">{{ click_rate }}%</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Toplam Tıklanma</small>
+                    <h6 class="mb-0">{{ total_clicks }}</h6>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

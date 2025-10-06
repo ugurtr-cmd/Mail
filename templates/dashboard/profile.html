@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profil - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Profil</h2>
+        <p class="mb-0">Hesap bilgilerinizi yönetin</p>
+    </div>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'edit_profile' %}" class="btn btn-primary">
+            <i class="fas fa-edit me-2"></i>Profili Düzenle
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow mb-4">
+            <div class="card-body text-center">
+                {% if user.profile.avatar %}
+                <img src="{{ user.profile.avatar.url }}" alt="Profil Resmi" class="rounded-circle mb-3" width="120" height="120">
+                {% else %}
+                <div class="rounded-circle bg-primary d-inline-flex align-items-center justify-content-center mb-3" style="width: 120px; height: 120px;">
+                    <i class="fas fa-user text-white fa-3x"></i>
+                </div>
+                {% endif %}
+                <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
+                <p class="text-muted mb-2">{{ user.email }}</p>
+                <span class="badge bg-success">Aktif</span>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Hesap Özeti</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Üyelik Tarihi</small>
+                    <p class="mb-0">{{ user.date_joined|date:"d M Y" }}</p>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Son Giriş</small>
+                    <p class="mb-0">{{ user.last_login|date:"d M Y H:i"|default:"-" }}</p>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Zaman Dilimi</small>
+                    <p class="mb-0">{{ user.profile.timezone }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Profil Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-3">
+                        <strong>Kullanıcı Adı</strong>
+                    </div>
+                    <div class="col-sm-9">
+                        {{ user.username }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3">
+                        <strong>E-posta</strong>
+                    </div>
+                    <div class="col-sm-9">
+                        {{ user.email }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3">
+                        <strong>Ad Soyad</strong>
+                    </div>
+                    <div class="col-sm-9">
+                        {{ user.get_full_name|default:"Belirtilmemiş" }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3">
+                        <strong>Telefon</strong>
+                    </div>
+                    <div class="col-sm-9">
+                        {{ user.profile.phone|default:"Belirtilmemiş" }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3">
+                        <strong>E-posta İmzası</strong>
+                    </div>
+                    <div class="col-sm-9">
+                        {{ user.profile.email_signature|default:"Belirtilmemiş"|linebreaks }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">İstatistikler</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="h3 font-weight-bold text-primary mb-1">12</div>
+                        <small class="text-muted">Toplam Kampanya</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="h3 font-weight-bold text-success mb-1">1.2K</div>
+                        <small class="text-muted">Toplam Abone</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="h3 font-weight-bold text-info mb-1">34.5%</div>
+                        <small class="text-muted">Ort. Açılma Oranı</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kara Listeden Çıkar - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-6">
+        <div class="card border-0 shadow">
+            <div class="card-body text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-ban fa-3x text-warning"></i>
+                </div>
+                
+                <h4 class="mb-3">Kara Listeden Çıkar</h4>
+                <p class="text-muted mb-4">
+                    "<strong>{{ blacklist_entry.email }}</strong>" e-posta adresini kara listeden çıkarmak istediğinizden emin misiniz?
+                </p>
+                
+                <div class="alert alert-info text-start">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Bu e-posta artık e-posta gönderimlerinizde kullanılabilecek.</strong><br>
+                    <small class="mb-0">
+                        • E-posta gelecek kampanyalara dahil edilebilecek<br>
+                        • Manuel olarak listelere eklenebilecek<br>
+                        • Otomasyonlar bu e-postaya gönderim yapabilecek
+                    </small>
+                </div>
+                
+                <div class="mb-4 p-3 bg-light rounded">
+                    <h6>Kara Liste Bilgileri:</h6>
+                    <p class="mb-1"><strong>E-posta:</strong> {{ blacklist_entry.email }}</p>
+                    <p class="mb-1"><strong>Sebep:</strong> {{ blacklist_entry.get_reason_display }}</p>
+                    <p class="mb-1"><strong>Açıklama:</strong> {{ blacklist_entry.description|default:"Belirtilmemiş" }}</p>
+                    <p class="mb-0"><strong>Eklenme Tarihi:</strong> {{ blacklist_entry.created_at|date:"d M Y" }}</p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a href="{% url 'blacklist' %}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-check me-2"></i>Evet, Kara Listeden Çıkar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

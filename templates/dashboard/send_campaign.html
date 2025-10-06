@@ -1,0 +1,249 @@
+<!-- dashboard/send_campaign.html - Hatalı satırları düzelt -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kampanya Gönder - EmailOtomasyon{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center py-4">
+    <div class="d-block mb-4 mb-md-0">
+        <h2 class="h4">Kampanya Gönder</h2>
+        <p class="mb-0">{{ campaign.name }} kampanyasını gönderin</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow">
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Kampanyayı göndermek üzeresiniz!</strong> 
+                    Bu işlem geri alınamaz. Lütfen gönderim öncesi detayları kontrol edin.
+                </div>
+                
+                <form method="post" id="sendForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Gönderim Özeti</h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td width="30%"><strong>Kampanya Adı</strong></td>
+                                        <td>{{ campaign.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Konu</strong></td>
+                                        <td>{{ campaign.subject }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Hedef Listeler</strong></td>
+                                        <td>
+                                            <ul class="mb-0">
+                                                {% for mail_list in campaign.mail_lists.all %}
+                                                <li>
+                                                    {{ mail_list.name }} 
+                                                    ({{ mail_list.subscriber_count }} aktif abone)
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Toplam Abone</strong></td>
+                                        <td>
+                                            <strong class="text-primary">{{ total_subscribers }}</strong> aktif abone
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Gönderim Zamanı</strong></td>
+                                        <td>
+                                            <strong class="text-success">Hemen</strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    {% if total_subscribers == 0 %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Hedef listelerde aktif abone bulunamadı!</strong><br>
+                        Kampanyayı göndermeden önce listelere aktif abone ekleyin.
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Gönderim Onayı</h6>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="confirm1" required {% if total_subscribers == 0 %}disabled{% endif %}>
+                            <label class="form-check-label" for="confirm1">
+                                Kampanya içeriğini kontrol ettim ve onaylıyorum
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="confirm2" required {% if total_subscribers == 0 %}disabled{% endif %}>
+                            <label class="form-check-label" for="confirm2">
+                                Hedef kitlemin bu içeriği almak istediğinden eminim
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirm3" required {% if total_subscribers == 0 %}disabled{% endif %}>
+                            <label class="form-check-label" for="confirm3">
+                                Gönderim sınırlarımı aşmadığımı biliyorum
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="mb-3">Test Gönderimi (Önerilir)</h6>
+                        <div class="input-group mb-2">
+                            <input type="email" class="form-control" placeholder="Test e-posta adresi" id="testEmail" value="{{ request.user.email }}">
+                            <button type="button" class="btn btn-outline-primary" onclick="sendTestEmail()" id="testButton">
+                                <i class="fas fa-paper-plane me-2"></i>Test Gönder
+                            </button>
+                        </div>
+                        <div id="testResult" class="mt-2"></div>
+                        <div class="form-text">Kampanyayı kendinize test e-postası olarak gönderin</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'campaign_detail' campaign.id %}" class="btn btn-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-success" id="sendButton" {% if total_subscribers == 0 %}disabled{% endif %}>
+                            <i class="fas fa-paper-plane me-2"></i>
+                            {% if total_subscribers > 0 %}
+                                {{ total_subscribers }} Aboneye Gönder
+                            {% else %}
+                                Abone Yok
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">📊 Gerçek Zamanlı İstatistik</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Bu Ay Gönderilen</small>
+                    <h5 class="mb-0" id="monthlySent">0</h5>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Kalan Günlük Kotanız</small>
+                    <h5 class="mb-0" id="dailyQuota">1000</h5>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Ortalama Açılma Oranı</small>
+                    <h5 class="mb-0" id="avgOpenRate">0%</h5>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card border-0 shadow mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">🚀 Hızlı İpuçları</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <strong>Önce test gönderimi yapın</strong><br>
+                        <small class="text-muted">İçerik ve formatı kontrol edin</small>
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        <strong>Doğru zamanı seçin</strong><br>
+                        <small class="text-muted">Hedef kitlenizin aktif saatleri</small>
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-mobile-alt text-info me-2"></i>
+                        <strong>Mobil uyumluluk</strong><br>
+                        <small class="text-muted">Mobil cihazlarda test edin</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function sendTestEmail() {
+    const testEmail = document.getElementById('testEmail').value;
+    const testButton = document.getElementById('testButton');
+    const testResult = document.getElementById('testResult');
+    
+    if (!testEmail) {
+        testResult.innerHTML = '<div class="alert alert-danger">Lütfen test e-posta adresini girin</div>';
+        return;
+    }
+    
+    testButton.disabled = true;
+    testButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Gönderiliyor...';
+    
+    fetch(`/dashboard/campaigns/{{ campaign.id }}/test-send/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `test_email=${encodeURIComponent(testEmail)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            testResult.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
+        } else {
+            testResult.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+        }
+    })
+    .catch(error => {
+        testResult.innerHTML = '<div class="alert alert-danger">İstek hatası: ' + error + '</div>';
+    })
+    .finally(() => {
+        testButton.disabled = false;
+        testButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Test Gönder';
+    });
+}
+
+// Gerçek zamanlı istatistikleri yükle
+function loadRealTimeStats() {
+    fetch('/dashboard/api/real-time-stats/')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('monthlySent').textContent = data.monthly_sent || '0';
+            document.getElementById('dailyQuota').textContent = data.daily_quota || '1000';
+            document.getElementById('avgOpenRate').textContent = data.avg_open_rate || '0%';
+        });
+}
+
+// Form gönderim kontrolü
+document.getElementById('sendForm').addEventListener('submit', function(e) {
+    const confirm1 = document.getElementById('confirm1').checked;
+    const confirm2 = document.getElementById('confirm2').checked;
+    const confirm3 = document.getElementById('confirm3').checked;
+    
+    if (!confirm1 || !confirm2 || !confirm3) {
+        e.preventDefault();
+        alert('Lütfen tüm onay kutularını işaretleyin');
+        return;
+    }
+    
+    const button = document.getElementById('sendButton');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Gönderiliyor...';
+});
+
+// Sayfa yüklendiğinde istatistikleri yükle
+document.addEventListener('DOMContentLoaded', loadRealTimeStats);
+</script>
+{% endblock %}
