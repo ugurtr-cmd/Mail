@@ -7,3 +7,4 @@ django-cloudinary-storage==0.3.0
 requests
 google-generativeai
 whitenoise
+Pillow
