@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-rr*xqhpp25l&!fe*n&uyl2e3=2tmig_mlh=gq==r*j=*rrh$j8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -119,11 +119,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# Ek olarak: Render/production ortamı için Whitenoise kullanımı
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -139,10 +135,18 @@ ALLOWED_HOSTS = ["*"]
 DJANGO_SUPERUSER_PASSWORD = os.environ.get('DJANGO_SUPERUSER_PASSWORD', '')
 
 # settings.py'ye SMTP ayarlarını ekle
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.yandex.com'  # veya kendi SMTP sunucunuz
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'seymailetisim@yandex.com'  # Gerçek e-posta
+# EMAIL_HOST_PASSWORD = 'qiakrilwxnueksos'  # App password
+# DEFAULT_FROM_EMAIL = 'ugurkezertr@gmail.com'
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.yandex.com'  # veya kendi SMTP sunucunuz
+EMAIL_HOST = 'smtp.resend.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'seymailetisim@yandex.com'  # Gerçek e-posta
-EMAIL_HOST_PASSWORD = 'qiakrilwxnueksos'  # App password
-DEFAULT_FROM_EMAIL = 'ugurkezertr@gmail.com'
+EMAIL_HOST_USER = 'resend'  # Resend için sabit
+EMAIL_HOST_PASSWORD = 're_cp2gu54t_BX59sMBcRYUL4K669P1Bx28A'  # Resend API key'iniz
+DEFAULT_FROM_EMAIL = 'onboarding@resend.dev'  # Veya verified domain email

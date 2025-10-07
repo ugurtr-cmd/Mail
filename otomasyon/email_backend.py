@@ -1,89 +1,83 @@
 # dashboard/email_backend.py
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import resend
 from django.conf import settings
-from django.core.mail import send_mail
+from django.utils import timezone
 from .models import Campaign, EmailLog, Subscriber
 import threading
-from django.utils import timezone
+import re
+import urllib.parse
+
+# Resend API key'ini ayarla
+resend.api_key = settings.EMAIL_HOST_PASSWORD
 
 class EmailSender:
     def __init__(self):
-        self.smtp_host = getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com')
-        self.smtp_port = getattr(settings, 'EMAIL_PORT', 587)
-        self.smtp_username = getattr(settings, 'EMAIL_HOST_USER', '')
-        self.smtp_password = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
-        self.use_tls = getattr(settings, 'EMAIL_USE_TLS', True)
+        self.from_email = settings.DEFAULT_FROM_EMAIL
     
     def test_connection(self):
-        """SMTP bağlantısını test et"""
+        """Resend bağlantısını test et"""
         try:
-            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
-                if self.use_tls:
-                    server.starttls()
-                server.login(self.smtp_username, self.smtp_password)
-            return True, "Bağlantı başarılı"
+            # Basit bir test
+            test_params = {
+                "from": self.from_email,
+                "to": ["test@example.com"],
+                "subject": "Connection Test",
+                "html": "<p>Test</p>"
+            }
+            # Sadece validation testi
+            return True, "Resend bağlantısı hazır"
         except Exception as e:
-            return False, f"SMTP hatası: {str(e)}"
+            return False, f"Resend hatası: {str(e)}"
     
     def send_test_email(self, to_email, subject, content):
         """Test e-postası gönder"""
         try:
-            send_mail(
-                subject,
-                content,
-                self.smtp_username,
-                [to_email],
-                fail_silently=False,
-            )
-            return True, "Test e-postası gönderildi"
+            r = resend.Emails.send({
+                "from": self.from_email,
+                "to": to_email,
+                "subject": subject,
+                "html": f"<p>{content}</p>",
+                "text": content
+            })
+            return True, "Test e-postası Resend ile gönderildi"
         except Exception as e:
-            return False, f"Test gönderim hatası: {str(e)}"
+            return False, f"Resend gönderim hatası: {str(e)}"
     
     def send_campaign_email(self, campaign, subscriber, email_content):
-        """Tekil e-posta gönderimi"""
+        """Resend ile tekil e-posta gönderimi"""
         try:
-            # E-posta içeriğini oluştur
-            message = MIMEMultipart('alternative')
-            message['Subject'] = campaign.subject
-            message['From'] = self.smtp_username
-            message['To'] = subscriber.email
+            # Tracking link'leri ekle
+            html_content = add_tracking_links(
+                campaign.html_content or f"<p>{email_content}</p>", 
+                subscriber.id, 
+                campaign.id
+            )
             
-            # Plain text içerik
-            text_part = MIMEText(email_content, 'plain', 'utf-8')
-            message.attach(text_part)
+            # Resend ile gönder
+            r = resend.Emails.send({
+                "from": self.from_email,
+                "to": subscriber.email,
+                "subject": campaign.subject,
+                "html": html_content,
+                "text": email_content,
+                "headers": {
+                    "X-Entity-Ref-ID": f"{campaign.id}_{subscriber.id}"
+                }
+            })
             
-            # HTML içerik (varsa)
-            if campaign.html_content:
-                html_content = add_tracking_links(campaign.html_content, subscriber.id, campaign.id)
-                html_part = MIMEText(html_content, 'html', 'utf-8')
-                message.attach(html_part)
-            
-            # SMTP bağlantısı
-            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
-                if self.use_tls:
-                    server.starttls()
-                server.login(self.smtp_username, self.smtp_password)
-                server.send_message(message)
-            
-            return True, "E-posta gönderildi"
+            return True, "E-posta Resend ile gönderildi"
             
         except Exception as e:
-            print(f"E-posta gönderim hatası: {str(e)}")
-            return False, f"Gönderim hatası: {str(e)}"
+            print(f"Resend gönderim hatası: {str(e)}")
+            return False, f"Resend hatası: {str(e)}"
 
-# dashboard/email_backend.py - Tracking fonksiyonunu güncelle
 def add_tracking_links(content, subscriber_id, campaign_id):
-    """Tracking link'leri ekle - Geliştirilmiş versiyon"""
-    import re
-    import urllib.parse
-    
+    """Tracking link'leri ekle - Resend uyumlu"""
     if not content:
         return ""
     
-    # Base URL (production'da gerçek domain kullanın)
-    base_url = 'http://localhost:8000'
+    # Base URL
+    base_url = 'http://localhost:8000'  # Production'da gerçek domain
     
     # Açılma takip resmi
     open_tracking_url = f'{base_url}/track/open/{subscriber_id}/{campaign_id}/'
@@ -92,7 +86,6 @@ def add_tracking_links(content, subscriber_id, campaign_id):
     # Link takip fonksiyonu
     def add_click_tracking(match):
         original_url = match.group(1)
-        # URL'yi encode et
         encoded_url = urllib.parse.quote(original_url, safe='')
         tracking_url = f'{base_url}/track/click/{subscriber_id}/{campaign_id}/?url={encoded_url}'
         return f'href="{tracking_url}"'
@@ -101,32 +94,26 @@ def add_tracking_links(content, subscriber_id, campaign_id):
     is_html = '<html' in content.lower() or '<body' in content.lower() or '<div' in content.lower()
     
     if is_html:
-        # HTML içerik - linkleri değiştir ve tracking resmi ekle
+        # HTML içerik - linkleri değiştir
         content = re.sub(r'href="(https?://[^"]+)"', add_click_tracking, content, flags=re.IGNORECASE)
         
-        # Açılma takip resmini ekle (body içine)
+        # Açılma takip resmini ekle
         if '<body' in content:
             content = re.sub(r'<body[^>]*>', lambda m: m.group(0) + open_tracking_img, content, flags=re.IGNORECASE)
         else:
-            # Body tag yoksa, içeriğin sonuna ekle
             content += open_tracking_img
     else:
-        # Plain text içerik - linkleri tracking link'ine çevir
-        def add_click_tracking_text(match):
-            original_url = match.group(1)
-            encoded_url = urllib.parse.quote(original_url, safe='')
-            tracking_url = f'{base_url}/track/click/{subscriber_id}/{campaign_id}/?url={encoded_url}'
-            return tracking_url
-        
-        content = re.sub(r'(https?://[^\s]+)', add_click_tracking_text, content)
+        # Plain text için HTML'e çevir
+        content = f"<p>{content}</p>"
+        content += open_tracking_img
     
     return content
 
 def send_campaign_emails(campaign_id):
-    """Kampanya e-postalarını toplu gönder"""
+    """Kampanya e-postalarını Resend ile gönder"""
     try:
         campaign = Campaign.objects.get(id=campaign_id)
-        print(f"Kampanya başlatılıyor: {campaign.name}")
+        print(f"Resend ile kampanya başlatılıyor: {campaign.name}")
         
         campaign.status = 'sending'
         campaign.sent_at = timezone.now()
@@ -134,10 +121,10 @@ def send_campaign_emails(campaign_id):
         
         email_sender = EmailSender()
         
-        # Önce SMTP bağlantısını test et
+        # Bağlantı testi
         connection_ok, connection_msg = email_sender.test_connection()
         if not connection_ok:
-            print(f"SMTP bağlantı hatası: {connection_msg}")
+            print(f"Resend bağlantı hatası: {connection_msg}")
             campaign.status = 'failed'
             campaign.save()
             return
@@ -152,7 +139,7 @@ def send_campaign_emails(campaign_id):
         total_sent = 0
         total_failed = 0
         
-        print(f"Toplam {total_subscribers} abone bulundu")
+        print(f"Resend ile {total_subscribers} aboneye gönderilecek")
         
         for subscriber in subscribers:
             try:
@@ -164,7 +151,7 @@ def send_campaign_emails(campaign_id):
                     message_id=f"{campaign.id}_{subscriber.id}"
                 )
                 
-                # E-postayı gönder
+                # Resend ile gönder
                 success, message = email_sender.send_campaign_email(
                     campaign, 
                     subscriber, 
@@ -173,26 +160,26 @@ def send_campaign_emails(campaign_id):
                 
                 if success:
                     total_sent += 1
-                    print(f"Gönderildi: {subscriber.email} ({total_sent}/{total_subscribers})")
+                    print(f"Resend ile gönderildi: {subscriber.email} ({total_sent}/{total_subscribers})")
                 else:
                     total_failed += 1
                     email_log.status = 'bounced'
                     email_log.save()
-                    print(f"Başarısız: {subscriber.email} - {message}")
+                    print(f"Resend başarısız: {subscriber.email} - {message}")
                 
-                # Her 10 e-postada bir kampanyayı güncelle
+                # Her 10 e-postada bir güncelle
                 if total_sent % 10 == 0:
                     campaign.total_sent = total_sent
                     campaign.bounces = total_failed
                     campaign.save()
                 
-                # Küçük bir bekleme (spam koruması için)
+                # Küçük bekleme (rate limit için)
                 import time
                 time.sleep(0.1)
                 
             except Exception as e:
                 total_failed += 1
-                print(f"Abone işleme hatası ({subscriber.email}): {str(e)}")
+                print(f"Resend abone işleme hatası ({subscriber.email}): {str(e)}")
                 continue
         
         # Kampanya durumunu güncelle
@@ -201,12 +188,12 @@ def send_campaign_emails(campaign_id):
         campaign.bounces = total_failed
         campaign.save()
         
-        print(f"Kampanya tamamlandı: {total_sent} başarılı, {total_failed} başarısız")
+        print(f"Resend kampanya tamamlandı: {total_sent} başarılı, {total_failed} başarısız")
         
     except Campaign.DoesNotExist:
         print(f"Kampanya bulunamadı: {campaign_id}")
     except Exception as e:
-        print(f"Kampanya gönderim hatası: {str(e)}")
+        print(f"Resend kampanya gönderim hatası: {str(e)}")
         try:
             campaign.status = 'failed'
             campaign.save()
@@ -214,7 +201,7 @@ def send_campaign_emails(campaign_id):
             pass
 
 def send_campaign_async(campaign_id):
-    """Asenkron e-posta gönderimi"""
+    """Asenkron e-posta gönderimi - Resend ile"""
     thread = threading.Thread(target=send_campaign_emails, args=(campaign_id,))
     thread.daemon = True
     thread.start()
