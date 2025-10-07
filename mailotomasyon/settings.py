@@ -143,6 +143,8 @@ DJANGO_SUPERUSER_PASSWORD = os.environ.get('DJANGO_SUPERUSER_PASSWORD', '')
 # EMAIL_HOST_PASSWORD = 'qiakrilwxnueksos'  # App password
 # DEFAULT_FROM_EMAIL = 'ugurkezertr@gmail.com'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.resend.com'
