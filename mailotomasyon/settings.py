@@ -143,10 +143,11 @@ DJANGO_SUPERUSER_PASSWORD = os.environ.get('DJANGO_SUPERUSER_PASSWORD', '')
 # EMAIL_HOST_PASSWORD = 'qiakrilwxnueksos'  # App password
 # DEFAULT_FROM_EMAIL = 'ugurkezertr@gmail.com'
 
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.resend.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'resend'  # Resend için sabit
-EMAIL_HOST_PASSWORD = 're_cp2gu54t_BX59sMBcRYUL4K669P1Bx28A'  # Resend API key'iniz
-DEFAULT_FROM_EMAIL = 'onboarding@resend.dev'  # Veya verified domain email
+EMAIL_HOST_PASSWORD = os.environ.get('RESEND_API_KEY', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'onboarding@resend.dev')
